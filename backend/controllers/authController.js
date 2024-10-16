@@ -30,10 +30,8 @@ export const signup = async (req, res) => {
         password: null
       }
     });
-
-
   } catch (error) {
-
+    res.status(500).json({ message: `Something went wrong: ${error.message}` });
   }
 }
 
@@ -42,6 +40,13 @@ export const signin = (req, res) => {
 }
 
 export const logout = (req, res) => {
-  res.clearCookie('token');
-  res.status(200).json({ message: 'Logged out successfully' });
+  try {
+    if (!req.cookies.token) {
+      return res.status(400).json({ message: 'User is not logged in' });
+    }
+    res.clearCookie('token');
+    res.status(200).json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ message: `Something went wrong: ${error.message}` });
+  }
 }
