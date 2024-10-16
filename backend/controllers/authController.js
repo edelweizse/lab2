@@ -35,8 +35,38 @@ export const signup = async (req, res) => {
   }
 }
 
-export const signin = (req, res) => {
-  res.send('Signin route');
+export const signin = async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    // validation
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Please fill in all fields' });
+    }
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    if (!isPasswordCorrect) {
+      return res.status(400).json({ message: 'Invalid password' });
+    }
+
+    // login user
+    genTokenAndSetCookies(res, user._id);
+    user.lastLogin = Date.now();
+    await user.save();
+
+    res.status(200).json({
+      message: 'Logged in successfully',
+      user: {
+        ...user._doc,
+        password: null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ message: `Something went wrong: ${error.message}` });
+  }
 }
 
 export const logout = (req, res) => {
