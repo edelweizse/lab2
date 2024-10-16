@@ -42,5 +42,6 @@ export const signin = (req, res) => {
 }
 
 export const logout = (req, res) => {
-  res.send('Logout route');
+  res.clearCookie('token');
+  res.status(200).json({ message: 'Logged out successfully' });
 }
