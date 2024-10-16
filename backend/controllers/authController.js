@@ -1,5 +1,40 @@
-export const signup = (req, res) => {
-  res.send('Signup route');
+import bcrypt from 'bcrypt';
+import { User } from '../db/models/user.js';
+import { genTokenAndSetCookies } from '../utils/genTokenAndSetCookies.js';
+
+export const signup = async (req, res) => {
+  const { name, email, password } = req.body;
+
+  try {
+    // validation
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: 'Please fill in all fields' });
+    }
+
+    const ifUserExists = await User.findOne({ email });
+    if (ifUserExists) {
+      return res.status(400).json({ message: 'User already exists' });
+    }
+
+    // create new user
+    const hashedPassword = await bcrypt.hash(password, 12);
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    genTokenAndSetCookies(res, user._id);
+
+    res.status(201).json({ 
+      message: 'User created successfully',
+      user:{
+        ...user._doc,
+        password: null
+      }
+    });
+
+
+  } catch (error) {
+
+  }
 }
 
 export const signin = (req, res) => {
