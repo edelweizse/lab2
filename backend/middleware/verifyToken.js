@@ -10,8 +10,6 @@ export const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    console.log('Decoded Token:', decoded);
-
     if (!decoded || !decoded.userId) {
       return res.status(401).json({ message: 'Unauthorized: invalid token' });
     }
